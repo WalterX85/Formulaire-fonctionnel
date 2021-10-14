@@ -1,25 +1,147 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import "./App.css";
 
-function App() {
+const App = () => {
+  const [name, setName] = useState("");
+  const [company, setCompany] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
+  const isEmail = () => {
+    let mail = document.getElementById("not-mail");
+    let regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    // La regex est la structure de base d'une adresse mail, il permet de s'assurer que l'utilisateur l'a correctement rempli. La méthode .match vient tester la regex.
+
+    if (email.match(regex)) {
+      mail.style.display = "none";
+      return true;
+    } else {
+      mail.style.display = "block";
+      mail.style.animation = "dongle 1s";
+      setTimeout(() => {
+        mail.style.animation = "none";
+      }, 1000);
+      return false;
+    }
+  };
+  // Si email retoune true, il valide la condition isEmail en ligne 34.
+  // setTimeout permet de répéter l'animation a chaque erreur de saisie
+
+  const failMessage = () => {
+    let formMess = document.querySelector('.form-message');
+
+    formMess.innerHTML = 'Merci de remplir correctement les champs requis *';
+    formMess.style.opacity = '1';
+    formMess.style.background = '#ff4d4d';
+
+    document.getElementById('name').classList.add('error');
+    document.getElementById('email').classList.add('error');
+    document.getElementById('message').classList.add('error'); // les placeholders passent en rouge si erreur de saisie.
+  }
+
+  const successMessage = () => {
+    let formMess = document.querySelector('.form-message');
+
+    formMess.innerHTML = 'Message envoyé ! Nous vous recontacterrons dès que possible.'
+    formMess.style.opacity = '1';
+    formMess.style.background = '#00c1ec';
+  }
+
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (name && isEmail() && message) {
+      sendFeedback("template_3t34wdf", {
+        // "TemplateID"
+        name,
+        company,
+        phone,
+        email,
+        message,
+      });
+    } else {
+      failMessage();
+    }
+  };
+
+  const sendFeedback = (templateId, variables) => {
+    window.emailjs
+      .send("service_7nej26u", templateId, variables) // "ServiceID"
+      .then((res) => {
+        successMessage();
+        setName("");
+        setCompany("");
+        setPhone("");
+        setEmail("");
+        setMessage("");
+      })
+      .catch(
+        (err) =>
+          (document.querySelector(".form-message").innerHTML =
+            "Une erreur s'est produite, veuillez réessayer.")
+      );
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <form className="contact-form">
+      <h2>Contactez-nous</h2>
+      <div className="form-content">
+        <input
+          type="text"
+          id="name"
+          name="name"
+          onChange={(e) => setName(e.target.value)}
+          placeholder="nom *"
+          value={name}
+          autoComplete="off"
+        />
+        <input
+          type="text"
+          id="company"
+          name="company"
+          onChange={(e) => setCompany(e.target.value)}
+          placeholder="société"
+          value={company}
+        />
+        <input
+          type="text"
+          id="phone"
+          name="phone"
+          onChange={(e) => setPhone(e.target.value)}
+          placeholder="téléphone"
+          value={phone}
+        />
+        <div className="email-content">
+          <label id="not-mail">Email non valide</label>
+          <input
+            type="mail"
+            id="email"
+            name="email"
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email *"
+            value={email}
+            autoComplete="off"
+          />
+        </div>
+        <textarea
+          id="message"
+          name="message"
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="message *"
+          value={message}
+        />
+      </div>
+      <input
+        className="button"
+        type="button"
+        value="Envoyer"
+        onClick={handleSubmit}
+      />
+      <div className="form-message"></div>
+    </form>
   );
-}
+};
 
 export default App;
